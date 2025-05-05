@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
+#[derive(Clone, Copy)]
 struct Level {
     value: i32,
 }
@@ -49,6 +50,25 @@ impl Report {
     fn is_safe(&self) -> bool {
         self.has_sorted_levels() && self.all_levels_are_close_enough_but_not_equal()
     }
+
+    fn is_safe_skipping_exactly_one_level(&self) -> bool {
+        self.levels
+            .iter()
+            .enumerate()
+            .map(|(index, _level)| {
+                Report {
+                    levels: self
+                        .levels
+                        .iter()
+                        .enumerate()
+                        .filter(|(i, _l)| *i != index)
+                        .map(|(_i, l)| (*l).clone())
+                        .collect::<Vec<Level>>(),
+                }
+                .is_safe()
+            })
+            .any(|x| x)
+    }
 }
 
 struct Reports {
@@ -62,11 +82,19 @@ impl Reports {
             .filter(|report| report.is_safe())
             .count()
     }
+
+    fn amount_safe_skipping_at_most_one_level(&self) -> usize {
+        self.reports
+            .iter()
+            .filter(|report| report.is_safe() || report.is_safe_skipping_exactly_one_level())
+            .count()
+    }
 }
 
 fn main() {
     let reports = read_input();
-    println!("{}", reports.amount_safe())
+    println!("{}", reports.amount_safe());
+    println!("{}", reports.amount_safe_skipping_at_most_one_level());
 }
 
 fn parse_into_report(line: String) -> Report {
