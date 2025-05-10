@@ -34,7 +34,7 @@ impl FromStr for MulInstruction {
     }
 }
 
-fn get_candidate_slices(str: &String) -> Vec<&str> {
+fn extract_instructions(str: &String) -> Vec<MulInstruction> {
     str.match_indices("mul")
         .map(|(start_index, _)| {
             str[start_index..]
@@ -42,6 +42,7 @@ fn get_candidate_slices(str: &String) -> Vec<&str> {
                 .and_then(|end_index| Some(&str[start_index..start_index + end_index + 1]))
         })
         .filter_map(|x| x)
+        .filter_map(|str| str.parse::<MulInstruction>().ok())
         .collect()
 }
 
@@ -52,10 +53,10 @@ fn read_input() -> String {
 
 fn main() {
     let input = read_input();
-    let mul_instructions = get_candidate_slices(&input)
+    let sum = extract_instructions(&input)
         .into_iter()
-        .filter_map(|str| str.parse::<MulInstruction>().ok());
-    let sum = mul_instructions.map(|c| c.result()).sum::<usize>();
+        .map(|c| c.result())
+        .sum::<usize>();
     println!("{}", sum)
 }
 
