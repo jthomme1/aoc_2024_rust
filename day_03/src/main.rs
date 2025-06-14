@@ -124,8 +124,21 @@ impl FromStr for Program {
 
 impl Program {
     fn evaluate(&self) -> usize {
-        // FIXME: implement
-        0
+        let mut is_active = true;
+        let mut sum = 0;
+        for instruction in self.instructions.iter() {
+            match instruction {
+                Instruction::DoInstruction() => is_active = true,
+                Instruction::DontInstruction() => is_active = false,
+                Instruction::MulInstruction(mul_instr) => {
+                    if is_active {
+                        sum += mul_instr.result()
+                    } else {
+                    }
+                }
+            }
+        }
+        sum
     }
 
     fn get_indices_with_instructions<'a, T, Err>(
@@ -229,6 +242,28 @@ mod tests {
                     })
                 ]
             })
+        );
+    }
+
+    #[test]
+    fn test_program_evaluation_works_as_expected() {
+        assert_eq!(
+            Program {
+                instructions: vec![
+                    Instruction::DontInstruction(),
+                    Instruction::MulInstruction(MulInstruction {
+                        multiplicand: 1,
+                        multiplier: 1
+                    }),
+                    Instruction::DoInstruction(),
+                    Instruction::MulInstruction(MulInstruction {
+                        multiplicand: 2,
+                        multiplier: 2
+                    })
+                ]
+            }
+            .evaluate(),
+            4
         );
     }
 }
